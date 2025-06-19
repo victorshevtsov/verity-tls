@@ -1,0 +1,10 @@
+[package]
+name = "verify-public"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+fixtures = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+verity-tls = { workspace = true }

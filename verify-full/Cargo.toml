@@ -1,0 +1,9 @@
+[package]
+name = "verify-full"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+serde_json = { workspace = true }
+fixtures = { workspace = true }
+verity-tls = { workspace = true }

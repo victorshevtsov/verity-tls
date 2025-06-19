@@ -1,0 +1,31 @@
+[package]
+name = "verity-tls"
+version.workspace = true
+edition.workspace = true
+
+[features]
+default = []
+# fixtures = ["dep:hex", "dep:tlsn-data-fixtures"]
+
+[dependencies]
+bcs = { workspace = true }
+bimap = { workspace = true, features = ["serde"] }
+blake3 = { workspace = true }
+k256 = { workspace = true }
+opaque-debug = { workspace = true }
+p256 = { workspace = true, features = ["serde"] }
+rand = { workspace = true }
+rs_merkle = { workspace = true, features = ["serde"] }
+serde = { workspace = true, features = ["derive"] }
+sha2 = { workspace = true }
+thiserror = { workspace = true }
+tiny-keccak = { workspace = true }
+web-time = { workspace = true }
+webpki-roots = { workspace = true }
+
+mpz-circuits = { workspace = true }
+mpz-core = { workspace = true }
+mpz-garble-core = { workspace = true }
+
+tlsn-tls-core = { workspace = true }
+tlsn-utils = { workspace = true }
