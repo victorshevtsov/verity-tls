@@ -1,5 +1,8 @@
 [workspace]
 members = [
+  "examples/host",
+  "examples/methods",
+  "examples/methods/guest",
   "fixtures",
   "verify-full",
   "verify-private",
@@ -26,6 +29,7 @@ serde_json = { version = "1.0" }
 sha2 = { version = "0.10" }
 thiserror = { version = "1.0" }
 tiny-keccak = { version = "2.0", features = ["keccak"] }
+tracing-subscriber = { version = "0.3" }
 web-time = { version = "0.2" }
 webpki-roots = { version = "0.26" }
 
@@ -40,5 +44,10 @@ mpz-garble-core = { git = "https://github.com/privacy-scaling-explorations/mpz",
 tlsn-tls-core = { git = "https://github.com/tlsnotary/tlsn", tag = "v0.1.0-alpha.7" }
 tlsn-utils = { git = "https://github.com/tlsnotary/tlsn-utils", rev = "e7b2db6" }
 
+# Risc0 packages
+risc0-build = { version = "1.2.6" }
+risc0-zkvm = { version = "1.2.6", default-features = false }
+
 fixtures = { path = "./fixtures" }
+methods = { path = "./examples/methods" }
 verity-tls = { path = "./verity-tls" }
