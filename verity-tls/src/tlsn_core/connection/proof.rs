@@ -2,13 +2,15 @@
 
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "public-facets")]
 use crate::tlsn_core::{
-    connection::{
-        commit::{ServerCertCommitment, ServerCertOpening},
-        CertificateVerificationError, ServerEphemKey, ServerName,
-    },
-    hash::{HashAlgorithmExt, HashProviderError},
+    connection::{commit::ServerCertCommitment, ServerEphemKey},
+    hash::HashAlgorithmExt,
     CryptoProvider,
+};
+use crate::tlsn_core::{
+    connection::{commit::ServerCertOpening, CertificateVerificationError, ServerName},
+    hash::HashProviderError,
 };
 
 /// TLS server identity proof.
@@ -18,6 +20,7 @@ pub struct ServerIdentityProof {
     opening: ServerCertOpening,
 }
 
+#[cfg(feature = "public-facets")]
 impl ServerIdentityProof {
     pub(crate) fn new(name: ServerName, opening: ServerCertOpening) -> Self {
         Self { name, opening }
@@ -88,6 +91,7 @@ impl From<CertificateVerificationError> for ServerIdentityProofError {
 #[derive(Debug)]
 enum ErrorKind {
     Provider,
+    #[cfg(feature = "public-facets")]
     Commitment,
     Certificate,
 }
@@ -96,6 +100,7 @@ impl std::fmt::Display for ErrorKind {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             ErrorKind::Provider => write!(f, "provider"),
+            #[cfg(feature = "public-facets")]
             ErrorKind::Commitment => write!(f, "commitment"),
             ErrorKind::Certificate => write!(f, "certificate"),
         }

@@ -1,7 +1,9 @@
 use serde::{Deserialize, Serialize};
 
+#[cfg(feature = "public-facets")]
+use crate::tlsn_core::connection::ServerIdentityProof;
 use crate::tlsn_core::{
-    connection::{ServerCertOpening, ServerIdentityProof, ServerName},
+    connection::{ServerCertOpening, ServerName},
     index::Index,
     transcript::{
         encoding::EncodingTree, hash::PlaintextHashSecret, Transcript, TranscriptProofBuilder,
@@ -32,6 +34,7 @@ impl Secrets {
     }
 
     /// Returns a server identity proof.
+    #[cfg(feature = "public-facets")]
     pub fn identity_proof(&self) -> ServerIdentityProof {
         ServerIdentityProof::new(self.server_name.clone(), self.server_cert_opening.clone())
     }

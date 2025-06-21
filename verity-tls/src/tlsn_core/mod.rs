@@ -175,8 +175,6 @@
 
 pub mod attestation;
 pub mod connection;
-// #[cfg(any(test, feature = "fixtures"))]
-// pub mod fixtures;
 pub mod hash;
 pub(crate) mod index;
 pub(crate) mod merkle;
@@ -189,4 +187,4 @@ pub mod signing;
 pub mod transcript;
 
 pub use provider::CryptoProvider;
-// pub use secrets::Secrets;
+pub use secrets::Secrets;

@@ -4,4 +4,7 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
+fixtures = { workspace = true }
 risc0-zkvm = { workspace = true, features = ['std'] }
+serde_json = { workspace = true }
+verity-tls = { workspace = true, features = ["private-facets"] }

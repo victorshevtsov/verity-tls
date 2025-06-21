@@ -4,6 +4,9 @@ version.workspace = true
 edition.workspace = true
 
 [dependencies]
-serde_json = { workspace = true }
 fixtures = { workspace = true }
-verity-tls = { workspace = true }
+serde_json = { workspace = true }
+verity-tls = { workspace = true, features = [
+  "private-facets",
+  "public-facets",
+] }

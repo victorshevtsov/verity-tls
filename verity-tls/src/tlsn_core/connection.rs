@@ -25,6 +25,7 @@ mod proof;
 use std::fmt;
 
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "public-facets")]
 use tls_core::{
     msgs::{
         codec::Codec,
@@ -33,9 +34,12 @@ use tls_core::{
     },
     verify::ServerCertVerifier as _,
 };
+#[cfg(feature = "public-facets")]
 use web_time::{Duration, UNIX_EPOCH};
 
-use crate::tlsn_core::{hash::impl_domain_separator, CryptoProvider};
+use crate::tlsn_core::hash::impl_domain_separator;
+#[cfg(feature = "public-facets")]
+use crate::tlsn_core::CryptoProvider;
 
 pub use commit::{ServerCertCommitment, ServerCertOpening};
 pub use proof::{ServerIdentityProof, ServerIdentityProofError};
@@ -50,6 +54,7 @@ pub enum TlsVersion {
     V1_3,
 }
 
+#[cfg(feature = "public-facets")]
 impl TryFrom<tls_core::msgs::enums::ProtocolVersion> for TlsVersion {
     type Error = &'static str;
 
@@ -125,6 +130,7 @@ pub enum SignatureScheme {
     ED25519 = 0x0807,
 }
 
+#[cfg(feature = "public-facets")]
 impl TryFrom<tls_core::msgs::enums::SignatureScheme> for SignatureScheme {
     type Error = &'static str;
 
@@ -149,6 +155,7 @@ impl TryFrom<tls_core::msgs::enums::SignatureScheme> for SignatureScheme {
     }
 }
 
+#[cfg(feature = "public-facets")]
 impl From<SignatureScheme> for tls_core::msgs::enums::SignatureScheme {
     fn from(value: SignatureScheme) -> Self {
         use tls_core::msgs::enums::SignatureScheme::*;
@@ -173,6 +180,7 @@ impl From<SignatureScheme> for tls_core::msgs::enums::SignatureScheme {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Certificate(pub Vec<u8>);
 
+#[cfg(feature = "public-facets")]
 impl From<tls_core::key::Certificate> for Certificate {
     fn from(cert: tls_core::key::Certificate) -> Self {
         Self(cert.0)
@@ -200,6 +208,7 @@ pub struct ServerEphemKey {
 
 impl_domain_separator!(ServerEphemKey);
 
+#[cfg(feature = "public-facets")]
 impl ServerEphemKey {
     /// Encodes the key exchange parameters as in TLS.
     pub(crate) fn kx_params(&self) -> Vec<u8> {
@@ -214,6 +223,7 @@ impl ServerEphemKey {
     }
 }
 
+#[cfg(feature = "public-facets")]
 impl TryFrom<tls_core::key::PublicKey> for ServerEphemKey {
     type Error = &'static str;
 
@@ -284,6 +294,7 @@ pub struct ServerCertData {
     pub handshake: HandshakeData,
 }
 
+#[cfg(feature = "public-facets")]
 impl ServerCertData {
     /// Verifies the server certificate data.
     ///

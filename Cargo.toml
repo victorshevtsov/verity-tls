@@ -29,6 +29,7 @@ serde_json = { version = "1.0" }
 sha2 = { version = "0.10" }
 thiserror = { version = "1.0" }
 tiny-keccak = { version = "2.0", features = ["keccak"] }
+tracing = { version = "0.1" }
 tracing-subscriber = { version = "0.3" }
 web-time = { version = "0.2" }
 webpki-roots = { version = "0.26" }

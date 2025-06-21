@@ -983,10 +983,12 @@ dependencies = [
 name = "host"
 version = "0.1.0"
 dependencies = [
+ "fixtures",
  "methods",
  "risc0-zkvm",
- "serde",
+ "serde_json",
  "tracing-subscriber 0.3.19",
+ "verity-tls",
 ]
 
 [[package]]
@@ -1165,7 +1167,10 @@ dependencies = [
 name = "method"
 version = "0.1.0"
 dependencies = [
+ "fixtures",
  "risc0-zkvm",
+ "serde_json",
+ "verity-tls",
 ]
 
 [[package]]
@@ -2207,13 +2212,17 @@ dependencies = [
 [[package]]
 name = "verify-private"
 version = "0.1.0"
+dependencies = [
+ "fixtures",
+ "serde_json",
+ "verity-tls",
+]
 
 [[package]]
 name = "verify-public"
 version = "0.1.0"
 dependencies = [
  "fixtures",
- "serde",
  "serde_json",
  "verity-tls",
 ]

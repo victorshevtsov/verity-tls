@@ -1,3 +1,4 @@
+#[cfg(feature = "public-facets")]
 use tls_core::{
     anchors::{OwnedTrustAnchor, RootCertStore},
     verify::WebPkiVerifier,
@@ -30,6 +31,7 @@ pub struct CryptoProvider {
     /// This is used to verify the server's certificate chain.
     ///
     /// The default verifier uses the Mozilla root certificates.
+    #[cfg(feature = "public-facets")]
     pub cert: WebPkiVerifier,
     /// Signer provider.
     ///
@@ -47,6 +49,7 @@ impl Default for CryptoProvider {
     fn default() -> Self {
         Self {
             hash: Default::default(),
+            #[cfg(feature = "public-facets")]
             cert: default_cert_verifier(),
             signer: Default::default(),
             signature: Default::default(),
@@ -54,6 +57,7 @@ impl Default for CryptoProvider {
     }
 }
 
+#[cfg(feature = "public-facets")]
 pub(crate) fn default_cert_verifier() -> WebPkiVerifier {
     let mut root_store = RootCertStore::empty();
     root_store.add_server_trust_anchors(webpki_roots::TLS_SERVER_ROOTS.iter().map(|ta| {
