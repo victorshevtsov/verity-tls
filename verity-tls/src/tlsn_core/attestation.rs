@@ -23,12 +23,7 @@ use std::fmt;
 use rand::distributions::{Distribution, Standard};
 use serde::{Deserialize, Serialize};
 
-#[cfg(all(feature = "private-facets", feature = "public-facets"))]
-use crate::tlsn_core::presentation::full::PresentationBuilder;
-#[cfg(all(feature = "private-facets", not(feature = "public-facets")))]
-use crate::tlsn_core::presentation::private::PresentationBuilder;
-#[cfg(all(not(feature = "private-facets"), feature = "public-facets"))]
-use crate::tlsn_core::presentation::public::PresentationBuilder;
+use crate::tlsn_core::presentation::PresentationBuilder;
 
 use crate::tlsn_core::{
     connection::{ConnectionInfo, ServerCertCommitment, ServerEphemKey},

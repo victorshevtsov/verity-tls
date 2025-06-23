@@ -30,6 +30,7 @@ use crate::tlsn_core::{
     attestation::{Attestation, AttestationError, AttestationProof},
     connection::{ConnectionInfo, ServerIdentityProof, ServerIdentityProofError, ServerName},
     signing::VerifyingKey,
+    transcript::{PartialTranscript, TranscriptProof, TranscriptProofError},
     CryptoProvider,
 };
 
@@ -41,6 +42,7 @@ use crate::tlsn_core::{
 pub struct Presentation {
     attestation: AttestationProof,
     identity: Option<ServerIdentityProof>,
+    transcript: Option<TranscriptProof>,
 }
 
 impl Presentation {
@@ -64,11 +66,15 @@ impl Presentation {
     ) -> Result<PresentationOutput, PresentationError> {
         let Self {
             attestation,
+            #[cfg(feature = "public-facets")]
             identity,
+            transcript,
+            ..
         } = self;
 
         let attestation = attestation.verify(provider)?;
 
+        #[cfg(feature = "public-facets")]
         let server_name = identity
             .map(|identity| {
                 identity.verify_with_provider(
@@ -79,6 +85,12 @@ impl Presentation {
                 )
             })
             .transpose()?;
+        #[cfg(not(feature = "public-facets"))]
+        let server_name = None;
+
+        let transcript = transcript
+            .map(|transcript| transcript.verify_with_provider(provider, &attestation.body))
+            .transpose()?;
 
         let connection_info = attestation.body.connection_info().clone();
 
@@ -86,6 +98,7 @@ impl Presentation {
             attestation,
             server_name,
             connection_info,
+            transcript,
         })
     }
 }
@@ -100,6 +113,8 @@ pub struct PresentationOutput {
     pub server_name: Option<ServerName>,
     /// Connection information.
     pub connection_info: ConnectionInfo,
+    /// Authenticated transcript data.
+    pub transcript: Option<PartialTranscript>,
 }
 
 /// Builder for [`Presentation`].
@@ -107,6 +122,7 @@ pub struct PresentationBuilder<'a> {
     provider: &'a CryptoProvider,
     attestation: &'a Attestation,
     identity_proof: Option<ServerIdentityProof>,
+    transcript_proof: Option<TranscriptProof>,
 }
 
 impl<'a> PresentationBuilder<'a> {
@@ -115,12 +131,19 @@ impl<'a> PresentationBuilder<'a> {
             provider,
             attestation,
             identity_proof: None,
+            transcript_proof: None,
         }
     }
 
     /// Includes a server identity proof.
     pub fn identity_proof(&mut self, proof: ServerIdentityProof) -> &mut Self {
         self.identity_proof = Some(proof);
+        self
+    }
+
+    /// Includes a transcript proof.
+    pub fn transcript_proof(&mut self, proof: TranscriptProof) -> &mut Self {
+        self.transcript_proof = Some(proof);
         self
     }
 
@@ -131,6 +154,7 @@ impl<'a> PresentationBuilder<'a> {
         Ok(Presentation {
             attestation,
             identity: self.identity_proof,
+            transcript: self.transcript_proof,
         })
     }
 }
@@ -183,6 +207,7 @@ pub struct PresentationError {
 enum ErrorKind {
     Attestation,
     Identity,
+    Transcript,
 }
 
 impl fmt::Display for PresentationError {
@@ -192,6 +217,7 @@ impl fmt::Display for PresentationError {
         match self.kind {
             ErrorKind::Attestation => f.write_str("attestation error")?,
             ErrorKind::Identity => f.write_str("server identity error")?,
+            ErrorKind::Transcript => f.write_str("transcript error")?,
         }
 
         if let Some(source) = &self.source {
@@ -215,6 +241,15 @@ impl From<ServerIdentityProofError> for PresentationError {
     fn from(error: ServerIdentityProofError) -> Self {
         Self {
             kind: ErrorKind::Identity,
+            source: Some(Box::new(error)),
+        }
+    }
+}
+
+impl From<TranscriptProofError> for PresentationError {
+    fn from(error: TranscriptProofError) -> Self {
+        Self {
+            kind: ErrorKind::Transcript,
             source: Some(Box::new(error)),
         }
     }

@@ -2,7 +2,7 @@
 // The ELF is used for proving and the ID is used for verification.
 use methods::{METHOD_ELF, METHOD_ID};
 use risc0_zkvm::{default_prover, ExecutorEnv};
-use verity_tls::tlsn_core::{presentation::public::Presentation, CryptoProvider};
+use verity_tls::tlsn_core::{presentation::Presentation, CryptoProvider};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing. In order to view logs, run `RUST_LOG=info cargo run`
@@ -10,7 +10,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_env_filter(tracing_subscriber::filter::EnvFilter::from_default_env())
         .init();
 
-    let presentation: Presentation = serde_json::from_str(fixtures::proof::PRESENTATION_1KB)?;
+    let presentation: Presentation = serde_json::from_str(fixtures::proof::PRESENTATION_32B_FULL)?;
     let presentation_output = presentation.verify(&CryptoProvider::default())?;
 
     println!("server_name: {:?}", &presentation_output.server_name);

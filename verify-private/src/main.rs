@@ -1,8 +1,9 @@
 extern crate verity_tls;
-use verity_tls::tlsn_core::{presentation::private::Presentation, CryptoProvider};
+use verity_tls::tlsn_core::{presentation::Presentation, CryptoProvider};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let presentation: Presentation = serde_json::from_str(fixtures::proof::PRESENTATION_32B_PRIVATE)?;
+    let presentation: Presentation =
+        serde_json::from_str(fixtures::proof::PRESENTATION_32B_PRIVATE)?;
     let presentation_output = presentation.verify(&CryptoProvider::default())?;
 
     let mut transcript = presentation_output.transcript.ok_or("no transcript")?;

@@ -1,5 +1,5 @@
 use risc0_zkvm::guest::env;
-use verity_tls::tlsn_core::{presentation::private::Presentation, CryptoProvider};
+use verity_tls::tlsn_core::{presentation::Presentation, CryptoProvider};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // read the input
