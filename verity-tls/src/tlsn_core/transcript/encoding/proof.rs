@@ -21,6 +21,7 @@ pub(super) struct Opening {
     pub(super) direction: Direction,
     pub(super) seq: Subsequence,
     pub(super) blinder: Blinder,
+    pub(super) encoding: Option<Vec<u8>>,
 }
 
 opaque_debug::implement!(Opening);
@@ -72,6 +73,7 @@ impl EncodingProof {
                 direction,
                 seq,
                 blinder,
+                encoding,
             },
         ) in openings
         {
@@ -102,7 +104,9 @@ impl EncodingProof {
                 ));
             }
 
-            let expected_encoding = encoder.encode_subsequence(direction, &seq);
+            let expected_encoding =
+                encoding.unwrap_or_else(|| encoder.encode_subsequence(direction, &seq));
+
             let expected_leaf =
                 Blinded::new_with_blinder(EncodingLeaf::new(expected_encoding), blinder);
 
@@ -122,6 +126,25 @@ impl EncodingProof {
         inclusion_proof.verify(hasher, &commitment.root, leaves)?;
 
         Ok(transcript)
+    }
+
+    /// Precompute encodings of every Opening of the transcript and store precomputed encoding into the Opening
+    pub fn precompute_encodings(
+        &mut self,
+        commitment: &EncodingCommitment,
+    ) -> Result<(), EncodingProofError> {
+        let seed: [u8; 32] = commitment.seed.clone().try_into().map_err(|_| {
+            EncodingProofError::new(ErrorKind::Commitment, "encoding seed not 32 bytes")
+        })?;
+
+        let encoder = new_encoder(seed);
+
+        for (_id, opening) in &mut self.openings {
+            let encoding = encoder.encode_subsequence(opening.direction, &opening.seq);
+            opening.encoding = Some(encoding);
+        }
+
+        Ok(())
     }
 }
 

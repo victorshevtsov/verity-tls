@@ -101,6 +101,20 @@ impl Presentation {
             transcript,
         })
     }
+
+    /// Precompute encodings of every Opening of the transcript and store precomputed encoding into the Opening
+    pub fn precompute_encodings(&mut self) -> Result<(), PresentationError> {
+        let body_proof = self.attestation.get_attestation_bodyproof();
+
+        let transcript = self.transcript.as_mut().ok_or_else(|| PresentationError {
+            kind: ErrorKind::Transcript,
+            source: Some("transcript is missing".into()),
+        })?;
+
+        transcript.precompute_encodings(&body_proof.body)?;
+
+        Ok(())
+    }
 }
 
 /// Output of a verified [`Presentation`].

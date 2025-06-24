@@ -79,6 +79,25 @@ impl TranscriptProof {
 
         Ok(transcript)
     }
+
+    /// Precompute encodings of every Opening of the transcript and store precomputed encoding into the Opening
+    pub fn precompute_encodings(
+        &mut self,
+        attestation_body: &Body,
+    ) -> Result<(), TranscriptProofError> {
+        if let Some(proof) = &mut self.encoding_proof {
+            let commitment = attestation_body.encoding_commitment().ok_or_else(|| {
+                TranscriptProofError::new(
+                    ErrorKind::Encoding,
+                    "contains an encoding proof but attestation is missing encoding commitment",
+                )
+            })?;
+
+            proof.precompute_encodings(commitment)?;
+        }
+
+        Ok(())
+    }
 }
 
 /// Error for [`TranscriptProof`].

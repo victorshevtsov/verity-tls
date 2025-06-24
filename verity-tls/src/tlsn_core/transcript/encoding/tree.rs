@@ -175,6 +175,7 @@ impl EncodingTree {
                     direction,
                     seq,
                     blinder: nonce,
+                    encoding: None,
                 },
             );
         }

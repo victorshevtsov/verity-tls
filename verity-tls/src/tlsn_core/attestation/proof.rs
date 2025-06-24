@@ -38,6 +38,11 @@ impl AttestationProof {
         })
     }
 
+    /// Getter for the attestation body
+    pub(crate) fn get_attestation_bodyproof(&self) -> BodyProof {
+        return self.body.clone();
+    }
+
     /// Returns the verifying key.
     pub fn verifying_key(&self) -> &VerifyingKey {
         self.body.verifying_key()
@@ -78,7 +83,7 @@ impl AttestationProof {
 /// Proof of an attestation body.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(crate) struct BodyProof {
-    body: Body,
+    pub(crate) body: Body,
     proof: MerkleProof,
 }
 
