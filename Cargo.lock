@@ -2203,25 +2203,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ba73ea9cf16a25df0c8caa16c51acb937d5712a8429db78a3ee29d5dcacd3a65"
 
 [[package]]
-name = "verify-full"
-version = "0.1.0"
-dependencies = [
- "fixtures",
- "serde_json",
- "verity-tls",
-]
-
-[[package]]
-name = "verify-private"
-version = "0.1.0"
-dependencies = [
- "fixtures",
- "serde_json",
- "verity-tls",
-]
-
-[[package]]
-name = "verify-public"
+name = "verify"
 version = "0.1.0"
 dependencies = [
  "fixtures",

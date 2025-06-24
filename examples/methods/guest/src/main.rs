@@ -7,7 +7,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let presentation = read_input_2()?;
     let presentation = read_input_3()?;
 
-    let presentation_output = presentation.verify(&CryptoProvider::default())?;
+    let presentation_output = presentation.verify_private_facets(&CryptoProvider::default())?;
     let mut transcript = presentation_output.transcript.ok_or("no transcript")?;
 
     transcript.set_unauthed(b'X');

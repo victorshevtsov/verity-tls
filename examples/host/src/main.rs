@@ -11,7 +11,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
 
     let mut presentation: Presentation =
-        serde_json::from_str(fixtures::proof::PRESENTATION_32B_PRIVATE)?;
+        serde_json::from_str(fixtures::proof::PRESENTATION_32B_FULL)?;
     presentation.precompute_encodings()?;
 
     // std::fs::write(
@@ -20,13 +20,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // )
     // .unwrap();
 
-    let presentation_output = presentation.clone().verify(&CryptoProvider::default())?;
+    let presentation_output = presentation
+        .clone()
+        .verify_full(&CryptoProvider::default())?;
 
     println!("server_name: {:?}", &presentation_output.server_name);
     println!(
         "connection_info: {:?}",
         &presentation_output.connection_info
     );
+    println!();
 
     let mut transcript = presentation_output.transcript.ok_or("no transcript")?;
     transcript.set_unauthed(b'X');

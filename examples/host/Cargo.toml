@@ -10,4 +10,7 @@ methods = { workspace = true }
 risc0-zkvm = { workspace = true, features = ["client"] }
 serde_json = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
-verity-tls = { workspace = true, features = ["public-facets"] }
+verity-tls = { workspace = true, features = [
+  "private-facets",
+  "public-facets",
+] }

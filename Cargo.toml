@@ -4,9 +4,7 @@ members = [
   "examples/methods",
   "examples/methods/guest",
   "fixtures",
-  "verify-full",
-  "verify-private",
-  "verify-public",
+  "verify",
   "verity-tls",
 ]
 resolver = "2"
