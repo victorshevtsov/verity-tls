@@ -10,8 +10,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_env_filter(tracing_subscriber::filter::EnvFilter::from_default_env())
         .init();
 
-    let presentation: Presentation = serde_json::from_str(fixtures::proof::PRESENTATION_32B_FULL)?;
-    let presentation_output = presentation.verify(&CryptoProvider::default())?;
+    let mut presentation: Presentation =
+        serde_json::from_str(fixtures::proof::PRESENTATION_32B_PRIVATE)?;
+    presentation.precompute_encodings()?;
+
+    // std::fs::write(
+    //     "../../fixtures/proof/precompute-32b.json",
+    //     serde_json::to_string_pretty(&presentation).unwrap(),
+    // )
+    // .unwrap();
+
+    let presentation_output = presentation.clone().verify(&CryptoProvider::default())?;
 
     println!("server_name: {:?}", &presentation_output.server_name);
     println!(
@@ -19,25 +28,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &presentation_output.connection_info
     );
 
-    // An executor environment describes the configurations for the zkVM
-    // including program inputs.
-    // A default ExecutorEnv can be created like so:
-    // `let env = ExecutorEnv::builder().build().unwrap();`
-    // However, this `env` does not have any inputs.
-    //
-    // To add guest input to the executor environment, use
-    // ExecutorEnvBuilder::write().
-    // To access this method, you'll need to use ExecutorEnv::builder(), which
-    // creates an ExecutorEnvBuilder. When you're done adding input, call
-    // ExecutorEnvBuilder::build().
+    let mut transcript = presentation_output.transcript.ok_or("no transcript")?;
+    transcript.set_unauthed(b'X');
 
-    // For example:
-    let input: u32 = 15 * u32::pow(2, 27) + 1;
-    let env = ExecutorEnv::builder()
-        .write(&input)
-        .unwrap()
-        .build()
-        .unwrap();
+    let verified_by_host = (
+        String::from_utf8(transcript.sent_unsafe().to_vec())?,
+        String::from_utf8(transcript.received_unsafe().to_vec())?,
+    );
+
+    // let env = write_input_1(&presentation);
+    // let env = write_input_2(&presentation)?;
+    let env = write_input_3(&presentation)?;
 
     // Obtain the default prover.
     let prover = default_prover();
@@ -50,11 +51,67 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let receipt = prove_info.receipt;
 
     // For example:
-    let _output: u32 = receipt.journal.decode().unwrap();
+    let verified_by_guest: (String, String) = receipt.journal.decode().unwrap();
+
+    println!(
+        "sent [host / guest]: [{} / {}]",
+        verified_by_host.0.len(),
+        verified_by_guest.0.len(),
+    );
+    println!(
+        "rcvd [host / guest]: [{} / {}]",
+        verified_by_host.1.len(),
+        verified_by_guest.1.len(),
+    );
+
+    // Assert that the proof verification within the zkVM matches the proof verification by the host
+    assert_eq!(verified_by_guest, verified_by_host);
 
     // The receipt was verified at the end of proving, but the below code is an
     // example of how someone else could verify this receipt.
     receipt.verify(METHOD_ID).unwrap();
 
     Ok(())
+}
+
+#[allow(dead_code)]
+fn write_input_1(presentation: &Presentation) -> ExecutorEnv<'_> {
+    ExecutorEnv::builder()
+        .write(presentation)
+        .unwrap()
+        .build()
+        .unwrap()
+}
+
+#[allow(dead_code)]
+fn write_input_2(
+    presentation: &Presentation,
+) -> Result<ExecutorEnv<'_>, Box<dyn std::error::Error>> {
+    let input = serde_json::to_string(presentation)?;
+    let input: &[u8] = input.as_bytes();
+
+    let env = ExecutorEnv::builder()
+        .write(&input)
+        .unwrap()
+        .build()
+        .unwrap();
+
+    Ok(env)
+}
+
+#[allow(dead_code)]
+fn write_input_3(
+    presentation: &Presentation,
+) -> Result<ExecutorEnv<'_>, Box<dyn std::error::Error>> {
+    let input_bytes = bincode::serialize(&presentation)?;
+
+    println!("Host is writing input_bytes: {}", input_bytes.len());
+
+    let env = ExecutorEnv::builder()
+        .write(&input_bytes.len())
+        .unwrap()
+        .write_slice(&input_bytes)
+        .build()?;
+
+    Ok(env)
 }

@@ -983,6 +983,7 @@ dependencies = [
 name = "host"
 version = "0.1.0"
 dependencies = [
+ "bincode",
  "fixtures",
  "methods",
  "risc0-zkvm",
@@ -1167,6 +1168,7 @@ dependencies = [
 name = "method"
 version = "0.1.0"
 dependencies = [
+ "bincode",
  "fixtures",
  "risc0-zkvm",
  "serde_json",
