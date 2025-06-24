@@ -43,8 +43,8 @@
 //! commitments directly to the transcript data.
 //!
 //! ```no_run
-//! # use tlsn_core::transcript::{TranscriptCommitConfigBuilder, Transcript, Direction};
-//! # use tlsn_core::hash::HashAlgId;
+//! # use verity_tls::tlsn_core::transcript::{TranscriptCommitConfigBuilder, Transcript, Direction};
+//! # use verity_tls::tlsn_core::hash::HashAlgId;
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! # let transcript: Transcript = unimplemented!();
 //! let (sent_len, recv_len) = transcript.len();
@@ -102,10 +102,13 @@
 //! [`Presentation`](crate::presentation::Presentation).
 //!
 //! ```no_run
-//! # use tlsn_core::presentation::Presentation;
-//! # use tlsn_core::attestation::Attestation;
-//! # use tlsn_core::transcript::{TranscriptCommitmentKind, Direction};
-//! # use tlsn_core::{Secrets, CryptoProvider};
+//! # use verity_tls::tlsn_core::presentation::Presentation;
+//! # use verity_tls::tlsn_core::attestation::Attestation;
+//! # use verity_tls::tlsn_core::transcript::{TranscriptCommitmentKind, Direction};
+//! # use verity_tls::tlsn_core::{Secrets, CryptoProvider};
+//! # #[cfg(not(feature = "public-facets"))]
+//! # fn main() { }
+//! # #[cfg(feature = "public-facets")]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! # let attestation: Attestation = unimplemented!();
 //! # let secrets: Secrets = unimplemented!();
@@ -148,9 +151,13 @@
 //! [`Presentation::verify`](crate::presentation::Presentation::verify).
 //!
 //! ```no_run
-//! # use tlsn_core::presentation::{Presentation, PresentationOutput};
-//! # use tlsn_core::signing::VerifyingKey;
-//! # use tlsn_core::CryptoProvider;
+//! #
+//! # use verity_tls::tlsn_core::presentation::{Presentation, PresentationOutput};
+//! # use verity_tls::tlsn_core::signing::VerifyingKey;
+//! # use verity_tls::tlsn_core::CryptoProvider;
+//! # #[cfg(not(all(feature = "private-facets", feature = "public-facets")))]
+//! # fn main() { }
+//! # #[cfg(all(feature = "private-facets", feature = "public-facets"))]
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! # let presentation: Presentation = unimplemented!();
 //! # let trusted_key: VerifyingKey = unimplemented!();
@@ -164,7 +171,7 @@
 //!     connection_info,
 //!     transcript,
 //!     ..
-//! } = presentation.verify(&crypto_provider)?;
+//! } = presentation.verify_full(&crypto_provider)?;
 //! # Ok(())
 //! # }
 //! ```

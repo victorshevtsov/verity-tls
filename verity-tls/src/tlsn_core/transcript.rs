@@ -596,39 +596,39 @@ mod validation {
     }
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use rstest::{fixture, rstest};
+#[cfg(test)]
+mod tests {
+    use rstest::{fixture, rstest};
 
-//     use super::*;
+    use super::*;
 
-//     #[fixture]
-//     fn transcript() -> Transcript {
-//         Transcript::new(
-//             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-//             [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
-//         )
-//     }
+    #[fixture]
+    fn transcript() -> Transcript {
+        Transcript::new(
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+        )
+    }
 
-//     #[rstest]
-//     fn test_get_subsequence(transcript: Transcript) {
-//         let subseq = transcript
-//             .get(Direction::Received, &Idx(RangeSet::from([0..4, 7..10])))
-//             .unwrap();
-//         assert_eq!(subseq.data, vec![0, 1, 2, 3, 7, 8, 9]);
+    #[rstest]
+    fn test_get_subsequence(transcript: Transcript) {
+        let subseq = transcript
+            .get(Direction::Received, &Idx(RangeSet::from([0..4, 7..10])))
+            .unwrap();
+        assert_eq!(subseq.data, vec![0, 1, 2, 3, 7, 8, 9]);
 
-//         let subseq = transcript
-//             .get(Direction::Sent, &Idx(RangeSet::from([0..4, 9..12])))
-//             .unwrap();
-//         assert_eq!(subseq.data, vec![0, 1, 2, 3, 9, 10, 11]);
+        let subseq = transcript
+            .get(Direction::Sent, &Idx(RangeSet::from([0..4, 9..12])))
+            .unwrap();
+        assert_eq!(subseq.data, vec![0, 1, 2, 3, 9, 10, 11]);
 
-//         let subseq = transcript.get(
-//             Direction::Received,
-//             &Idx(RangeSet::from([0..4, 7..10, 11..13])),
-//         );
-//         assert_eq!(subseq, None);
+        let subseq = transcript.get(
+            Direction::Received,
+            &Idx(RangeSet::from([0..4, 7..10, 11..13])),
+        );
+        assert_eq!(subseq, None);
 
-//         let subseq = transcript.get(Direction::Sent, &Idx(RangeSet::from([0..4, 7..10, 11..13])));
-//         assert_eq!(subseq, None);
-//     }
-// }
+        let subseq = transcript.get(Direction::Sent, &Idx(RangeSet::from([0..4, 7..10, 11..13])));
+        assert_eq!(subseq, None);
+    }
+}

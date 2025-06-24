@@ -132,177 +132,177 @@ impl MerkleTree {
     }
 }
 
-// #[cfg(test)]
-// mod test {
-//     use crate::hash::{impl_domain_separator, Blake3, HashAlgorithmExt, Keccak256, Sha256};
+#[cfg(test)]
+mod test {
+    use crate::tlsn_core::hash::{impl_domain_separator, Blake3, HashAlgorithmExt, Keccak256, Sha256};
 
-//     use super::*;
-//     use rstest::*;
+    use super::*;
+    use rstest::*;
 
-//     #[derive(Serialize)]
-//     struct T(u64);
+    #[derive(Serialize)]
+    struct T(u64);
 
-//     impl_domain_separator!(T);
+    impl_domain_separator!(T);
 
-//     fn leaves<H: HashAlgorithm>(hasher: &H, leaves: impl IntoIterator<Item = T>) -> Vec<Hash> {
-//         leaves
-//             .into_iter()
-//             .map(|x| hasher.hash_canonical(&x))
-//             .collect()
-//     }
+    fn leaves<H: HashAlgorithm>(hasher: &H, leaves: impl IntoIterator<Item = T>) -> Vec<Hash> {
+        leaves
+            .into_iter()
+            .map(|x| hasher.hash_canonical(&x))
+            .collect()
+    }
 
-//     fn choose_leaves(
-//         indices: impl IntoIterator<Item = usize>,
-//         leaves: &[Hash],
-//     ) -> Vec<(usize, Hash)> {
-//         indices.into_iter().map(|i| (i, leaves[i])).collect()
-//     }
+    fn choose_leaves(
+        indices: impl IntoIterator<Item = usize>,
+        leaves: &[Hash],
+    ) -> Vec<(usize, Hash)> {
+        indices.into_iter().map(|i| (i, leaves[i])).collect()
+    }
 
-//     // Expect Merkle proof verification to succeed
-//     #[rstest]
-//     #[case::sha2(Sha256::default())]
-//     #[case::blake3(Blake3::default())]
-//     #[case::keccak(Keccak256::default())]
-//     fn test_verify_success<H: HashAlgorithm>(#[case] hasher: H) {
-//         let mut tree = MerkleTree::new(hasher.id());
+    // Expect Merkle proof verification to succeed
+    #[rstest]
+    #[case::sha2(Sha256::default())]
+    #[case::blake3(Blake3::default())]
+    #[case::keccak(Keccak256::default())]
+    fn test_verify_success<H: HashAlgorithm>(#[case] hasher: H) {
+        let mut tree = MerkleTree::new(hasher.id());
 
-//         let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
+        let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
 
-//         tree.insert(&hasher, leaves.clone());
+        tree.insert(&hasher, leaves.clone());
 
-//         let proof = tree.proof(&[2, 3, 4]);
+        let proof = tree.proof(&[2, 3, 4]);
 
-//         assert!(proof
-//             .verify(&hasher, &tree.root(), choose_leaves([2, 3, 4], &leaves))
-//             .is_ok());
-//     }
+        assert!(proof
+            .verify(&hasher, &tree.root(), choose_leaves([2, 3, 4], &leaves))
+            .is_ok());
+    }
 
-//     #[rstest]
-//     #[case::sha2(Sha256::default())]
-//     #[case::blake3(Blake3::default())]
-//     #[case::keccak(Keccak256::default())]
-//     fn test_verify_fail_wrong_leaf<H: HashAlgorithm>(#[case] hasher: H) {
-//         let mut tree = MerkleTree::new(hasher.id());
+    #[rstest]
+    #[case::sha2(Sha256::default())]
+    #[case::blake3(Blake3::default())]
+    #[case::keccak(Keccak256::default())]
+    fn test_verify_fail_wrong_leaf<H: HashAlgorithm>(#[case] hasher: H) {
+        let mut tree = MerkleTree::new(hasher.id());
 
-//         let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
+        let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
 
-//         tree.insert(&hasher, leaves.clone());
+        tree.insert(&hasher, leaves.clone());
 
-//         let proof = tree.proof(&[2, 3, 4]);
+        let proof = tree.proof(&[2, 3, 4]);
 
-//         let mut choices = choose_leaves([2, 3, 4], &leaves);
+        let mut choices = choose_leaves([2, 3, 4], &leaves);
 
-//         choices[1].1 = leaves[0];
+        choices[1].1 = leaves[0];
 
-//         // fail because the leaf is wrong
-//         assert!(proof.verify(&hasher, &tree.root(), choices).is_err());
-//     }
+        // fail because the leaf is wrong
+        assert!(proof.verify(&hasher, &tree.root(), choices).is_err());
+    }
 
-//     #[rstest]
-//     #[case::sha2(Sha256::default())]
-//     #[case::blake3(Blake3::default())]
-//     #[case::keccak(Keccak256::default())]
-//     #[should_panic]
-//     fn test_proof_fail_length_unsorted<H: HashAlgorithm>(#[case] hasher: H) {
-//         let mut tree = MerkleTree::new(hasher.id());
+    #[rstest]
+    #[case::sha2(Sha256::default())]
+    #[case::blake3(Blake3::default())]
+    #[case::keccak(Keccak256::default())]
+    #[should_panic]
+    fn test_proof_fail_length_unsorted<H: HashAlgorithm>(#[case] hasher: H) {
+        let mut tree = MerkleTree::new(hasher.id());
 
-//         let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
+        let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
 
-//         tree.insert(&hasher, leaves.clone());
+        tree.insert(&hasher, leaves.clone());
 
-//         _ = tree.proof(&[2, 4, 3]);
-//     }
+        _ = tree.proof(&[2, 4, 3]);
+    }
 
-//     #[rstest]
-//     #[case::sha2(Sha256::default())]
-//     #[case::blake3(Blake3::default())]
-//     #[case::keccak(Keccak256::default())]
-//     #[should_panic]
-//     fn test_proof_fail_length_duplicates<H: HashAlgorithm>(#[case] hasher: H) {
-//         let mut tree = MerkleTree::new(hasher.id());
+    #[rstest]
+    #[case::sha2(Sha256::default())]
+    #[case::blake3(Blake3::default())]
+    #[case::keccak(Keccak256::default())]
+    #[should_panic]
+    fn test_proof_fail_length_duplicates<H: HashAlgorithm>(#[case] hasher: H) {
+        let mut tree = MerkleTree::new(hasher.id());
 
-//         let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
+        let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
 
-//         tree.insert(&hasher, leaves.clone());
+        tree.insert(&hasher, leaves.clone());
 
-//         _ = tree.proof(&[2, 2, 3]);
-//     }
+        _ = tree.proof(&[2, 2, 3]);
+    }
 
-//     #[rstest]
-//     #[case::sha2(Sha256::default())]
-//     #[case::blake3(Blake3::default())]
-//     #[case::keccak(Keccak256::default())]
-//     fn test_verify_fail_duplicates<H: HashAlgorithm>(#[case] hasher: H) {
-//         let mut tree = MerkleTree::new(hasher.id());
+    #[rstest]
+    #[case::sha2(Sha256::default())]
+    #[case::blake3(Blake3::default())]
+    #[case::keccak(Keccak256::default())]
+    fn test_verify_fail_duplicates<H: HashAlgorithm>(#[case] hasher: H) {
+        let mut tree = MerkleTree::new(hasher.id());
 
-//         let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
+        let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
 
-//         tree.insert(&hasher, leaves.clone());
+        tree.insert(&hasher, leaves.clone());
 
-//         let proof = tree.proof(&[2, 3, 4]);
+        let proof = tree.proof(&[2, 3, 4]);
 
-//         assert!(proof
-//             .verify(&hasher, &tree.root(), choose_leaves([2, 2, 3], &leaves))
-//             .is_err());
-//     }
+        assert!(proof
+            .verify(&hasher, &tree.root(), choose_leaves([2, 2, 3], &leaves))
+            .is_err());
+    }
 
-//     #[rstest]
-//     #[case::sha2(Sha256::default())]
-//     #[case::blake3(Blake3::default())]
-//     #[case::keccak(Keccak256::default())]
-//     fn test_verify_fail_incorrect_leaf_count<H: HashAlgorithm>(#[case] hasher: H) {
-//         let mut tree = MerkleTree::new(hasher.id());
+    #[rstest]
+    #[case::sha2(Sha256::default())]
+    #[case::blake3(Blake3::default())]
+    #[case::keccak(Keccak256::default())]
+    fn test_verify_fail_incorrect_leaf_count<H: HashAlgorithm>(#[case] hasher: H) {
+        let mut tree = MerkleTree::new(hasher.id());
 
-//         let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
+        let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
 
-//         tree.insert(&hasher, leaves.clone());
+        tree.insert(&hasher, leaves.clone());
 
-//         let mut proof = tree.proof(&[2, 3, 4]);
+        let mut proof = tree.proof(&[2, 3, 4]);
 
-//         proof.tree_len += 1;
+        proof.tree_len += 1;
 
-//         // fail because leaf count is wrong
-//         assert!(proof
-//             .verify(&hasher, &tree.root(), choose_leaves([2, 3, 4], &leaves))
-//             .is_err());
-//     }
+        // fail because leaf count is wrong
+        assert!(proof
+            .verify(&hasher, &tree.root(), choose_leaves([2, 3, 4], &leaves))
+            .is_err());
+    }
 
-//     #[rstest]
-//     #[case::sha2(Sha256::default())]
-//     #[case::blake3(Blake3::default())]
-//     #[case::keccak(Keccak256::default())]
-//     fn test_verify_fail_incorrect_indices<H: HashAlgorithm>(#[case] hasher: H) {
-//         let mut tree = MerkleTree::new(hasher.id());
+    #[rstest]
+    #[case::sha2(Sha256::default())]
+    #[case::blake3(Blake3::default())]
+    #[case::keccak(Keccak256::default())]
+    fn test_verify_fail_incorrect_indices<H: HashAlgorithm>(#[case] hasher: H) {
+        let mut tree = MerkleTree::new(hasher.id());
 
-//         let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
+        let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
 
-//         tree.insert(&hasher, leaves.clone());
+        tree.insert(&hasher, leaves.clone());
 
-//         let proof = tree.proof(&[2, 3, 4]);
+        let proof = tree.proof(&[2, 3, 4]);
 
-//         let mut choices = choose_leaves([2, 3, 4], &leaves);
-//         choices[1].0 = 1;
+        let mut choices = choose_leaves([2, 3, 4], &leaves);
+        choices[1].0 = 1;
 
-//         // fail because leaf index is wrong
-//         assert!(proof.verify(&hasher, &tree.root(), choices).is_err());
-//     }
+        // fail because leaf index is wrong
+        assert!(proof.verify(&hasher, &tree.root(), choices).is_err());
+    }
 
-//     #[rstest]
-//     #[case::sha2(Sha256::default())]
-//     #[case::blake3(Blake3::default())]
-//     #[case::keccak(Keccak256::default())]
-//     fn test_verify_fail_fewer_indices<H: HashAlgorithm>(#[case] hasher: H) {
-//         let mut tree = MerkleTree::new(hasher.id());
+    #[rstest]
+    #[case::sha2(Sha256::default())]
+    #[case::blake3(Blake3::default())]
+    #[case::keccak(Keccak256::default())]
+    fn test_verify_fail_fewer_indices<H: HashAlgorithm>(#[case] hasher: H) {
+        let mut tree = MerkleTree::new(hasher.id());
 
-//         let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
+        let leaves = leaves(&hasher, [T(0), T(1), T(2), T(3), T(4)]);
 
-//         tree.insert(&hasher, leaves.clone());
+        tree.insert(&hasher, leaves.clone());
 
-//         let proof = tree.proof(&[2, 3, 4]);
+        let proof = tree.proof(&[2, 3, 4]);
 
-//         // trying to verify less leaves than what was included in the proof
-//         assert!(proof
-//             .verify(&hasher, &tree.root(), choose_leaves([2, 3], &leaves))
-//             .is_err());
-//     }
-// }
+        // trying to verify less leaves than what was included in the proof
+        assert!(proof
+            .verify(&hasher, &tree.root(), choose_leaves([2, 3], &leaves))
+            .is_err());
+    }
+}

@@ -30,3 +30,7 @@ mpz-garble-core = { workspace = true }
 
 tlsn-tls-core = { workspace = true, optional = true }
 tlsn-utils = { workspace = true }
+
+[dev-dependencies]
+rand_core = { workspace = true }
+rstest = { workspace = true }
