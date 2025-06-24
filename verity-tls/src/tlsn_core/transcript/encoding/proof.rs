@@ -1,5 +1,6 @@
 use std::{collections::HashMap, fmt};
 
+use mpz_garble_core::{encoding_state::Full, EncodedValue};
 use serde::{Deserialize, Serialize};
 
 use crate::tlsn_core::{
@@ -21,7 +22,7 @@ pub(super) struct Opening {
     pub(super) direction: Direction,
     pub(super) seq: Subsequence,
     pub(super) blinder: Blinder,
-    pub(super) encoding: Option<Vec<u8>>,
+    pub(super) encoding: Option<Vec<EncodedValue<Full>>>,
 }
 
 opaque_debug::implement!(Opening);
@@ -104,8 +105,12 @@ impl EncodingProof {
                 ));
             }
 
-            let expected_encoding =
-                encoding.unwrap_or_else(|| encoder.encode_subsequence(direction, &seq));
+            let expected_encoding = match encoding {
+                Some(precompute) => {
+                    encoder.encode_subsequence_with_precompute(direction, &seq, precompute)
+                }
+                None => encoder.encode_subsequence(direction, &seq),
+            };
 
             let expected_leaf =
                 Blinded::new_with_blinder(EncodingLeaf::new(expected_encoding), blinder);
@@ -140,7 +145,7 @@ impl EncodingProof {
         let encoder = new_encoder(seed);
 
         for (_id, opening) in &mut self.openings {
-            let encoding = encoder.encode_subsequence(opening.direction, &opening.seq);
+            let encoding = encoder.generate_encoded_bytes(opening.direction, &opening.seq);
             opening.encoding = Some(encoding);
         }
 
