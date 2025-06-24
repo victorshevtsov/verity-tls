@@ -216,7 +216,7 @@ impl Presentation {
         })
     }
 
-    /// Precompute encodings of every Opening of the transcript and store precomputed encoding into the Opening
+    /// Precompute encodings of every Opening of the Transcript and store precomputed encoding into the Opening
     pub fn precompute_encodings(&mut self) -> Result<(), PresentationError> {
         let body_proof = self.attestation.get_attestation_bodyproof();
 
@@ -226,6 +226,18 @@ impl Presentation {
         })?;
 
         transcript.precompute_encodings(&body_proof.body)?;
+
+        Ok(())
+    }
+
+    /// Wipe a private data from all the Openings of the Transcript
+    pub fn wipe_private_data(&mut self) -> Result<(), PresentationError> {
+        let transcript = self.transcript.as_mut().ok_or_else(|| PresentationError {
+            kind: ErrorKind::Transcript,
+            source: Some("transcript is missing".into()),
+        })?;
+
+        transcript.wipe_private_data();
 
         Ok(())
     }

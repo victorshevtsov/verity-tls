@@ -79,7 +79,7 @@ impl EncodingProof {
         ) in openings
         {
             // Make sure the amount of data being proved is bounded.
-            total_opened += seq.len() as u128;
+            total_opened += seq.len().unwrap_or(0) as u128;
             if total_opened > MAX_TOTAL_COMMITTED_DATA as u128 {
                 return Err(EncodingProofError::new(
                     ErrorKind::Proof,
@@ -133,7 +133,7 @@ impl EncodingProof {
         Ok(transcript)
     }
 
-    /// Precompute encodings of every Opening of the transcript and store precomputed encoding into the Opening
+    /// Precompute encodings of every Opening of the Transcript and store precomputed encoding into the Opening
     pub fn precompute_encodings(
         &mut self,
         commitment: &EncodingCommitment,
@@ -150,6 +150,13 @@ impl EncodingProof {
         }
 
         Ok(())
+    }
+
+    /// Wipe a private data from all the Openings of the Transcript
+    pub fn wipe_private_data(&mut self) {
+        for (_id, opening) in &mut self.openings {
+            opening.seq.data = None;
+        }
     }
 }
 

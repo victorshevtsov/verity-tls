@@ -79,9 +79,13 @@ impl Encoder for ChaChaEncoder {
         precomputed_encodings: Vec<EncodedValue<Full>>,
     ) -> Vec<u8> {
         let mut num_opened = 0;
-        let mut encoding = Vec::with_capacity(seq.len() * 16);
+        let mut encoding = Vec::with_capacity(seq.len().expect("subsequence has no data") * 16);
 
-        for (_byte_id, &byte) in seq.index().iter().zip(seq.data()) {
+        for (_byte_id, &byte) in seq
+            .index()
+            .iter()
+            .zip(seq.data().expect("subsequence has no data"))
+        {
             let encoded_values = precomputed_encodings[num_opened].clone();
             let selected_encoding_value = encoded_values
                 .select(byte)
@@ -102,8 +106,12 @@ impl Encoder for ChaChaEncoder {
             Direction::Received => RX_TRANSCRIPT_ID,
         };
 
-        let mut encoding = Vec::with_capacity(seq.len() * 16);
-        for (byte_id, &byte) in seq.index().iter().zip(seq.data()) {
+        let mut encoding = Vec::with_capacity(seq.len().expect("subsequence has no data") * 16);
+        for (byte_id, &byte) in seq
+            .index()
+            .iter()
+            .zip(seq.data().expect("subsequence has no data"))
+        {
             let id_hash = mpz_core::utils::blake3(format!("{}/{}", id, byte_id).as_bytes());
             let id = u64::from_be_bytes(id_hash[..8].try_into().unwrap());
 

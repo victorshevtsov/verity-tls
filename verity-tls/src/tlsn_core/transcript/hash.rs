@@ -70,7 +70,7 @@ impl PlaintextHashProof {
 
         Ok((
             commitment.direction,
-            Subsequence::new(commitment.idx.clone(), self.data.into_parts().0)?,
+            Subsequence::new(commitment.idx.clone(), Some(self.data.into_parts().0))?,
         ))
     }
 }

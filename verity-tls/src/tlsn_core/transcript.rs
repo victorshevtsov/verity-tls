@@ -122,7 +122,7 @@ impl Transcript {
         }
 
         Some(
-            Subsequence::new(idx.clone(), data.index_ranges(&idx.0))
+            Subsequence::new(idx.clone(), Some(data.index_ranges(&idx.0)))
                 .expect("data is same length as index"),
         )
     }
@@ -466,16 +466,18 @@ pub struct Subsequence {
     /// Index of the subsequence.
     idx: Idx,
     /// Data of the subsequence.
-    data: Vec<u8>,
+    data: Option<Vec<u8>>,
 }
 
 impl Subsequence {
     /// Creates a new subsequence.
-    pub fn new(idx: Idx, data: Vec<u8>) -> Result<Self, InvalidSubsequence> {
-        if idx.len() != data.len() {
-            return Err(InvalidSubsequence(
-                "index length does not match data length",
-            ));
+    pub fn new(idx: Idx, data: Option<Vec<u8>>) -> Result<Self, InvalidSubsequence> {
+        if let Some(data) = &data {
+            if idx.len() != data.len() {
+                return Err(InvalidSubsequence(
+                    "index length does not match data length",
+                ));
+            }
         }
 
         Ok(Self { idx, data })
@@ -487,19 +489,19 @@ impl Subsequence {
     }
 
     /// Returns the data of the subsequence.
-    pub fn data(&self) -> &[u8] {
-        &self.data
+    pub fn data(&self) -> Option<&[u8]> {
+        self.data.as_deref()
     }
 
     /// Returns the length of the subsequence.
     #[allow(clippy::len_without_is_empty)]
-    pub fn len(&self) -> usize {
-        self.data.len()
+    pub fn len(&self) -> Option<usize> {
+        self.data.as_ref().map(|d| d.len())
     }
 
     /// Returns the inner parts of the subsequence.
     pub fn into_parts(self) -> (Idx, Vec<u8>) {
-        (self.idx, self.data)
+        (self.idx, self.data.expect("subsequence has no data"))
     }
 
     /// Copies the subsequence data into the given destination.
@@ -510,7 +512,9 @@ impl Subsequence {
     pub(crate) fn copy_to(&self, dest: &mut [u8]) {
         let mut offset = 0;
         for range in self.idx.iter_ranges() {
-            dest[range.clone()].copy_from_slice(&self.data[offset..offset + range.len()]);
+            dest[range.clone()].copy_from_slice(
+                &self.data.as_ref().expect("subsequence has no data")[offset..offset + range.len()],
+            );
             offset += range.len();
         }
     }
@@ -538,7 +542,7 @@ mod validation {
     #[derive(Debug, Deserialize)]
     pub(super) struct SubsequenceUnchecked {
         idx: Idx,
-        data: Vec<u8>,
+        data: Option<Vec<u8>>,
     }
 
     impl TryFrom<SubsequenceUnchecked> for Subsequence {
@@ -615,12 +619,12 @@ mod tests {
         let subseq = transcript
             .get(Direction::Received, &Idx(RangeSet::from([0..4, 7..10])))
             .unwrap();
-        assert_eq!(subseq.data, vec![0, 1, 2, 3, 7, 8, 9]);
+        assert_eq!(subseq.data, Some(vec![0, 1, 2, 3, 7, 8, 9]));
 
         let subseq = transcript
             .get(Direction::Sent, &Idx(RangeSet::from([0..4, 9..12])))
             .unwrap();
-        assert_eq!(subseq.data, vec![0, 1, 2, 3, 9, 10, 11]);
+        assert_eq!(subseq.data, Some(vec![0, 1, 2, 3, 9, 10, 11]));
 
         let subseq = transcript.get(
             Direction::Received,
