@@ -2,7 +2,10 @@
 // The ELF is used for proving and the ID is used for verification.
 use methods::{METHOD_ELF, METHOD_ID};
 use risc0_zkvm::{default_prover, ExecutorEnv};
-use verity_tls::tlsn_core::{presentation::Presentation, CryptoProvider};
+use verity_tls::{
+    merkle::generate_merkle_tree,
+    tlsn_core::{presentation::Presentation, CryptoProvider},
+};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing. In order to view logs, run `RUST_LOG=info cargo run`
@@ -10,38 +13,30 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .with_env_filter(tracing_subscriber::filter::EnvFilter::from_default_env())
         .init();
 
-    let mut presentation: Presentation =
+    let full_presentation: Presentation =
         serde_json::from_str(fixtures::proof::PRESENTATION_32B_FULL)?;
-    presentation.precompute_encodings()?;
+
+    let mut private_presentation = full_presentation.clone().wipe_public_data()?;
+    println!("private_presentation.precompute_encodings()");
+    private_presentation.precompute_encodings()?;
+
+    let mut public_presentation = full_presentation.clone();
+    println!("public_presentation.precompute_encodings()");
+    public_presentation.precompute_encodings()?;
+    public_presentation = public_presentation.wipe_private_data()?;
+    public_presentation = public_presentation.wipe_public_data()?;
+
+    full_presentation.verify_full(&CryptoProvider::default())?;
 
     // std::fs::write(
-    //     "../../fixtures/proof/precompute-32b.json",
+    //     "../../fixtures/proof/precompute-32b_no_data.json",
     //     serde_json::to_string_pretty(&presentation).unwrap(),
     // )
     // .unwrap();
 
-    let presentation_output = presentation
-        .clone()
-        .verify_full(&CryptoProvider::default())?;
-
-    println!("server_name: {:?}", &presentation_output.server_name);
-    println!(
-        "connection_info: {:?}",
-        &presentation_output.connection_info
-    );
-    println!();
-
-    let mut transcript = presentation_output.transcript.ok_or("no transcript")?;
-    transcript.set_unauthed(b'X');
-
-    let verified_by_host = (
-        String::from_utf8(transcript.sent_unsafe().to_vec())?,
-        String::from_utf8(transcript.received_unsafe().to_vec())?,
-    );
-
     // let env = write_input_1(&presentation);
     // let env = write_input_2(&presentation)?;
-    let env = write_input_3(&presentation)?;
+    let env = write_input_3(&private_presentation)?;
 
     // Obtain the default prover.
     let prover = default_prover();
@@ -54,21 +49,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let receipt = prove_info.receipt;
 
     // For example:
-    let verified_by_guest: (String, String) = receipt.journal.decode().unwrap();
+    let verified_by_guest: String = receipt.journal.decode().unwrap();
 
-    println!(
-        "sent [host / guest]: [{} / {}]",
-        verified_by_host.0.len(),
-        verified_by_guest.0.len(),
-    );
-    println!(
-        "rcvd [host / guest]: [{} / {}]",
-        verified_by_host.1.len(),
-        verified_by_guest.1.len(),
-    );
+    let leaf = serde_json::to_string(&public_presentation)?;
+
+    let merkle_tree = generate_merkle_tree(&vec![leaf]);
+    let root = merkle_tree.root().unwrap();
+    let verified_by_host = hex::encode(root);
+
+    println!("host: [{}]", verified_by_host,);
+    println!("guest: [{}]", verified_by_guest,);
 
     // Assert that the proof verification within the zkVM matches the proof verification by the host
-    assert_eq!(verified_by_guest, verified_by_host);
+    assert_eq!(verified_by_host, verified_by_guest);
 
     // The receipt was verified at the end of proving, but the below code is an
     // example of how someone else could verify this receipt.

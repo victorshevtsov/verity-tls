@@ -231,7 +231,7 @@ impl Presentation {
     }
 
     /// Wipe a private data from all the Openings of the Transcript
-    pub fn wipe_private_data(&mut self) -> Result<(), PresentationError> {
+    pub fn wipe_private_data(mut self) -> Result<Self, PresentationError> {
         let transcript = self.transcript.as_mut().ok_or_else(|| PresentationError {
             kind: ErrorKind::Transcript,
             source: Some("transcript is missing".into()),
@@ -239,7 +239,14 @@ impl Presentation {
 
         transcript.wipe_private_data();
 
-        Ok(())
+        Ok(self)
+    }
+
+    /// Wipe a public data (Identity) from the Transcript
+    pub fn wipe_public_data(mut self) -> Result<Self, PresentationError> {
+        self.identity = None;
+
+        Ok(self)
     }
 }
 

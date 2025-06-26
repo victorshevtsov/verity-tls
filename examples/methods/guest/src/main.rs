@@ -1,26 +1,26 @@
 use risc0_zkvm::guest::env;
-use verity_tls::tlsn_core::{presentation::Presentation, CryptoProvider};
+use verity_tls::{
+    merkle::generate_merkle_tree,
+    tlsn_core::{presentation::Presentation, CryptoProvider},
+};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // read the input
     // let presentation = read_input_1();
     // let presentation = read_input_2()?;
-    let presentation = read_input_3()?;
+    let private_presentation = read_input_3()?;
 
-    let presentation_output = presentation.verify_private_facets(&CryptoProvider::default())?;
-    let mut transcript = presentation_output.transcript.ok_or("no transcript")?;
+    let public_presentation = private_presentation.clone().wipe_private_data()?;
 
-    transcript.set_unauthed(b'X');
+    private_presentation.verify_private_facets(&CryptoProvider::default())?;
 
-    let sent = String::from_utf8(transcript.sent_unsafe().to_vec())?;
-    let received = String::from_utf8(transcript.received_unsafe().to_vec())?;
+    let leaf = serde_json::to_string(&public_presentation)?;
 
-    println!("{}", sent);
-    println!("{}", received);
+    let merkle_tree = generate_merkle_tree(&vec![leaf]);
+    let root = merkle_tree.root().unwrap();
+    let root_hex = hex::encode(root);
 
-    // write public output to the journal
-    env::commit(&sent);
-    env::commit(&received);
+    env::commit(&root_hex);
 
     Ok(())
 }
