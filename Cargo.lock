@@ -1790,6 +1790,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rs_merkle"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb09b49230ba22e8c676e7b75dfe2887dea8121f18b530ae0ba519ce442d2b21"
+dependencies = [
+ "sha2",
+]
+
+[[package]]
 name = "rstest"
 version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2250,6 +2259,7 @@ dependencies = [
  "bcs",
  "bimap",
  "blake3",
+ "hex",
  "k256",
  "mpz-circuits",
  "mpz-core",
@@ -2258,7 +2268,8 @@ dependencies = [
  "p256",
  "rand",
  "rand_core",
- "rs_merkle",
+ "rs_merkle 1.4.2",
+ "rs_merkle 1.5.0",
  "rstest",
  "serde",
  "sha2",

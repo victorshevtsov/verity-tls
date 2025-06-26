@@ -198,7 +198,7 @@ impl Hash {
     }
 }
 
-impl rs_merkle::Hash for Hash {
+impl tlsn_rs_merkle::Hash for Hash {
     const SIZE: usize = MAX_LEN;
 }
 

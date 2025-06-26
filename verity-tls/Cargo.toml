@@ -12,11 +12,12 @@ public-facets = ["dep:tlsn-tls-core", "dep:web-time"]
 bcs = { workspace = true }
 bimap = { workspace = true, features = ["serde"] }
 blake3 = { workspace = true }
+hex = { workspace = true }
 k256 = { workspace = true }
 opaque-debug = { workspace = true }
 p256 = { workspace = true, features = ["serde"] }
 rand = { workspace = true }
-rs_merkle = { workspace = true, features = ["serde"] }
+rs_merkle = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 sha2 = { workspace = true }
 thiserror = { workspace = true }
@@ -28,6 +29,7 @@ mpz-circuits = { workspace = true }
 mpz-core = { workspace = true }
 mpz-garble-core = { workspace = true }
 
+tlsn_rs_merkle = { workspace = true, features = ["serde"] }
 tlsn-tls-core = { workspace = true, optional = true }
 tlsn-utils = { workspace = true }
 

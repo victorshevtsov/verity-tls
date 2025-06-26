@@ -20,7 +20,7 @@ impl MerkleError {
 pub(crate) struct MerkleProof {
     alg: HashAlgId,
     tree_len: usize,
-    proof: rs_merkle::MerkleProof<Hash>,
+    proof: tlsn_rs_merkle::MerkleProof<Hash>,
 }
 
 opaque_debug::implement!(MerkleProof);
@@ -67,7 +67,7 @@ impl MerkleProof {
 #[derive(Clone)]
 struct RsMerkleHasher<'a>(&'a dyn HashAlgorithm);
 
-impl rs_merkle::Hasher for RsMerkleHasher<'_> {
+impl tlsn_rs_merkle::Hasher for RsMerkleHasher<'_> {
     type Hash = Hash;
 
     fn hash(&self, data: &[u8]) -> Hash {
@@ -78,7 +78,7 @@ impl rs_merkle::Hasher for RsMerkleHasher<'_> {
 #[derive(Clone, Serialize, Deserialize)]
 pub(crate) struct MerkleTree {
     alg: HashAlgId,
-    tree: rs_merkle::MerkleTree<Hash>,
+    tree: tlsn_rs_merkle::MerkleTree<Hash>,
 }
 
 impl MerkleTree {
@@ -134,7 +134,9 @@ impl MerkleTree {
 
 #[cfg(test)]
 mod test {
-    use crate::tlsn_core::hash::{impl_domain_separator, Blake3, HashAlgorithmExt, Keccak256, Sha256};
+    use crate::tlsn_core::hash::{
+        impl_domain_separator, Blake3, HashAlgorithmExt, Keccak256, Sha256,
+    };
 
     use super::*;
     use rstest::*;
