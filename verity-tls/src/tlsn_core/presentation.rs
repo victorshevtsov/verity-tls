@@ -241,13 +241,6 @@ impl Presentation {
 
         Ok(self)
     }
-
-    /// Wipe a public data (Identity) from the Transcript
-    pub fn wipe_public_data(mut self) -> Result<Self, PresentationError> {
-        self.identity = None;
-
-        Ok(self)
-    }
 }
 
 /// Output of a verified [`Presentation`].

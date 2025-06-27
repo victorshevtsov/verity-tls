@@ -18,23 +18,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let full_presentation: Presentation =
         serde_json::from_str(fixtures::proof::PRESENTATION_32B_FULL)?;
 
-    let mut private_presentation = full_presentation.clone().wipe_public_data()?;
+    let mut private_presentation = full_presentation.clone();
     println!("private_presentation.precompute_encodings()");
     private_presentation.precompute_encodings()?;
 
     let mut public_presentation = full_presentation.clone();
     println!("public_presentation.precompute_encodings()");
-    public_presentation.precompute_encodings()?;
     public_presentation = public_presentation.wipe_private_data()?;
-    public_presentation = public_presentation.wipe_public_data()?;
+    public_presentation.precompute_encodings()?;
+
+    let presentation_from_host = serde_json::to_string(&public_presentation)?;
 
     full_presentation.verify_full(&CryptoProvider::default())?;
-
-    // std::fs::write(
-    //     "../../fixtures/proof/precompute-32b_no_data.json",
-    //     serde_json::to_string_pretty(&presentation).unwrap(),
-    // )
-    // .unwrap();
 
     let env = interop::write_input(&private_presentation)?;
 
@@ -49,7 +44,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let receipt = prove_info.receipt;
 
     // For example:
-    let verified_by_guest: String = receipt.journal.decode().unwrap();
+    let (verified_by_guest, _presentation_from_guest): (String, Vec<u8>) =
+        receipt.journal.decode().unwrap();
 
     let leaf = serde_json::to_string(&public_presentation)?;
 
@@ -59,6 +55,19 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("host: [{}]", verified_by_host,);
     println!("guest: [{}]", verified_by_guest,);
+
+    // std::fs::write(
+    //     "../../fixtures/proof/presentation_from_host.json",
+    //     &presentation_from_host,
+    // )
+    // .unwrap();
+    // std::fs::write(
+    //     "../../fixtures/proof/presentation_from_guest.json",
+    //     serde_json::to_string(&bincode::deserialize::<Presentation>(
+    //         &_presentation_from_guest,
+    //     )?)?,
+    // )
+    // .unwrap();
 
     // Assert that the proof verification within the zkVM matches the proof verification by the host
     assert_eq!(verified_by_host, verified_by_guest);

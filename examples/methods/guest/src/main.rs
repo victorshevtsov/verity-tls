@@ -9,8 +9,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mut public_presentation = private_presentation.clone();
     public_presentation = public_presentation.wipe_private_data()?;
-    public_presentation = public_presentation.wipe_public_data()?;
-    public_presentation = public_presentation.wipe_precomputed_encodings()?;
 
     private_presentation.verify_private_facets(&CryptoProvider::default())?;
 
@@ -21,7 +19,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let root_hex = hex::encode(root);
 
     env::commit(&root_hex);
-    env::commit(&serde_json::to_string(&public_presentation)?);
     env::commit(&bincode::serialize(&public_presentation)?);
 
     Ok(())
