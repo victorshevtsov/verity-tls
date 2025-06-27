@@ -1,25 +1,28 @@
-use risc0_zkvm::guest::env;
-use verity_tls::{merkle::generate_merkle_tree, tlsn_core::CryptoProvider};
+use verity_tls::{
+    tlsn_core::{presentation::Presentation, CryptoProvider},
+    {Request, Response},
+};
 
 mod interop;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // read the input
-    let private_presentation = interop::read_input()?;
+    let request = interop::read_request()?;
 
-    let mut public_presentation = private_presentation.clone();
-    public_presentation = public_presentation.wipe_private_data()?;
+    let response = process_request(request)?;
 
-    private_presentation.verify_private_facets(&CryptoProvider::default())?;
-
-    let leaf = serde_json::to_string(&public_presentation)?;
-
-    let merkle_tree = generate_merkle_tree(&vec![leaf]);
-    let root = merkle_tree.root().unwrap();
-    let root_hex = hex::encode(root);
-
-    env::commit(&root_hex);
-    env::commit(&bincode::serialize(&public_presentation)?);
+    interop::commit_response(&response)?;
 
     Ok(())
+}
+
+fn process_request(request: Request) -> Result<Response, Box<dyn std::error::Error>> {
+    let mut presentations = Vec::<Presentation>::new();
+
+    for presentation in request.items.into_iter() {
+        presentations.push(presentation.clone().wipe_private_data()?);
+
+        presentation.verify_private_facets(&CryptoProvider::default())?;
+    }
+
+    Ok(Response::from(presentations))
 }

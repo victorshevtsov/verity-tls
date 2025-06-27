@@ -1,26 +1,22 @@
-use risc0_zkvm::ExecutorEnv;
-use verity_tls::tlsn_core::presentation::Presentation;
+use risc0_zkvm::{ExecutorEnv, Receipt};
+use verity_tls::{Request, Response};
 
-pub(crate) fn write_input(
-    presentation: &Presentation,
+pub(crate) fn write_request(
+    request: &Request,
 ) -> Result<ExecutorEnv<'_>, Box<dyn std::error::Error>> {
-    write_input_3(presentation)
+    write_request_3(request)
 }
 
 #[allow(dead_code)]
-fn write_input_1(
-    presentation: &Presentation,
-) -> Result<ExecutorEnv<'_>, Box<dyn std::error::Error>> {
-    let env = ExecutorEnv::builder().write(presentation)?.build()?;
+fn write_request_1(request: &Request) -> Result<ExecutorEnv<'_>, Box<dyn std::error::Error>> {
+    let env = ExecutorEnv::builder().write(&request)?.build()?;
 
     Ok(env)
 }
 
 #[allow(dead_code)]
-fn write_input_2(
-    presentation: &Presentation,
-) -> Result<ExecutorEnv<'_>, Box<dyn std::error::Error>> {
-    let input = serde_json::to_string(presentation)?;
+fn write_request_2(request: &Request) -> Result<ExecutorEnv<'_>, Box<dyn std::error::Error>> {
+    let input = serde_json::to_string(&request)?;
     let input: &[u8] = input.as_bytes();
 
     let env = ExecutorEnv::builder().write(&input)?.build()?;
@@ -29,12 +25,8 @@ fn write_input_2(
 }
 
 #[allow(dead_code)]
-fn write_input_3(
-    presentation: &Presentation,
-) -> Result<ExecutorEnv<'_>, Box<dyn std::error::Error>> {
-    let input_bytes = bincode::serialize(&presentation)?;
-
-    println!("Host is writing input_bytes: {}", input_bytes.len());
+fn write_request_3(request: &Request) -> Result<ExecutorEnv<'_>, Box<dyn std::error::Error>> {
+    let input_bytes = bincode::serialize(&request)?;
 
     let env = ExecutorEnv::builder()
         .write(&input_bytes.len())?
@@ -42,4 +34,22 @@ fn write_input_3(
         .build()?;
 
     Ok(env)
+}
+
+pub(crate) fn read_response(receipt: &Receipt) -> Result<Response, Box<dyn std::error::Error>> {
+    read_response_3(receipt)
+}
+
+#[allow(dead_code)]
+fn read_response_1(receipt: &Receipt) -> Result<Response, Box<dyn std::error::Error>> {
+    let response = receipt.journal.decode::<Response>()?;
+
+    Ok(response)
+}
+
+#[allow(dead_code)]
+fn read_response_3(receipt: &Receipt) -> Result<Response, Box<dyn std::error::Error>> {
+    let response = bincode::deserialize(&receipt.journal.bytes)?;
+
+    Ok(response)
 }

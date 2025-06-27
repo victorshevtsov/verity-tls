@@ -3,9 +3,11 @@
 use methods::{METHOD_ELF, METHOD_ID};
 use risc0_zkvm::default_prover;
 use verity_tls::{
-    merkle::generate_merkle_tree,
     tlsn_core::{presentation::Presentation, CryptoProvider},
+    {Request, Response},
 };
+
+use crate::interop::read_response;
 
 mod interop;
 
@@ -19,19 +21,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         serde_json::from_str(fixtures::proof::PRESENTATION_32B_FULL)?;
 
     let mut private_presentation = full_presentation.clone();
-    println!("private_presentation.precompute_encodings()");
     private_presentation.precompute_encodings()?;
 
+    let mut guest_request = Request::default();
+    guest_request.push(private_presentation);
+
     let mut public_presentation = full_presentation.clone();
-    println!("public_presentation.precompute_encodings()");
     public_presentation = public_presentation.wipe_private_data()?;
-    public_presentation.precompute_encodings()?;
 
-    let presentation_from_host = serde_json::to_string(&public_presentation)?;
+    let mut host_request = Request::default();
+    host_request.push(public_presentation);
 
-    full_presentation.verify_full(&CryptoProvider::default())?;
+    let host_response = process_request(host_request.clone())?;
 
-    let env = interop::write_input(&private_presentation)?;
+    let env = interop::write_request(&guest_request)?;
 
     // Obtain the default prover.
     let prover = default_prover();
@@ -43,38 +46,31 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // extract the receipt.
     let receipt = prove_info.receipt;
 
-    // For example:
-    let (verified_by_guest, _presentation_from_guest): (String, Vec<u8>) =
-        receipt.journal.decode().unwrap();
+    let guest_response = read_response(&receipt)?;
 
-    let leaf = serde_json::to_string(&public_presentation)?;
-
-    let merkle_tree = generate_merkle_tree(&vec![leaf]);
-    let root = merkle_tree.root().unwrap();
-    let verified_by_host = hex::encode(root);
-
-    println!("host: [{}]", verified_by_host,);
-    println!("guest: [{}]", verified_by_guest,);
-
-    // std::fs::write(
-    //     "../../fixtures/proof/presentation_from_host.json",
-    //     &presentation_from_host,
-    // )
-    // .unwrap();
-    // std::fs::write(
-    //     "../../fixtures/proof/presentation_from_guest.json",
-    //     serde_json::to_string(&bincode::deserialize::<Presentation>(
-    //         &_presentation_from_guest,
-    //     )?)?,
-    // )
-    // .unwrap();
+    println!("host: [{}]", host_response.hash.to_hex(),);
+    println!("guest: [{}]", guest_response.hash.to_hex(),);
 
     // Assert that the proof verification within the zkVM matches the proof verification by the host
-    assert_eq!(verified_by_host, verified_by_guest);
+    assert_eq!(host_response.hash, guest_response.hash);
 
     // The receipt was verified at the end of proving, but the below code is an
     // example of how someone else could verify this receipt.
     receipt.verify(METHOD_ID).unwrap();
 
     Ok(())
+}
+
+fn process_request(request: Request) -> Result<Response, Box<dyn std::error::Error>> {
+    let mut presentations = Vec::<Presentation>::new();
+
+    for mut presentation in request.items.into_iter() {
+        presentation.precompute_encodings()?;
+
+        presentations.push(presentation.clone());
+
+        presentation.verify_public_facets(&CryptoProvider::default())?;
+    }
+
+    Ok(Response::from(presentations))
 }

@@ -11,7 +11,8 @@ public-facets = ["dep:tlsn-tls-core", "dep:web-time"]
 [dependencies]
 bcs = { workspace = true }
 bimap = { workspace = true, features = ["serde"] }
-blake3 = { workspace = true }
+bincode = { workspace = true }
+blake3 = { workspace = true, features = ["serde"] }
 hex = { workspace = true }
 k256 = { workspace = true }
 opaque-debug = { workspace = true }

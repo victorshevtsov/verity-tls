@@ -310,6 +310,7 @@ dependencies = [
  "cc",
  "cfg-if",
  "constant_time_eq",
+ "serde",
 ]
 
 [[package]]
@@ -2260,6 +2261,7 @@ version = "0.1.0"
 dependencies = [
  "bcs",
  "bimap",
+ "bincode",
  "blake3",
  "hex",
  "k256",
