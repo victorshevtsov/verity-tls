@@ -1,6 +1,7 @@
+use blake3::Hash;
 use verity_tls::{
+    hash_presentations,
     tlsn_core::{presentation::Presentation, CryptoProvider},
-    {Request, Response},
 };
 
 mod interop;
@@ -15,14 +16,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn process_request(request: Request) -> Result<Response, Box<dyn std::error::Error>> {
-    let mut presentations = Vec::<Presentation>::new();
+fn process_request(presentations: Vec<Presentation>) -> Result<Hash, Box<dyn std::error::Error>> {
+    let mut public_presentations = Vec::<Presentation>::new();
 
-    for presentation in request.items.into_iter() {
-        presentations.push(presentation.clone().wipe_private_data()?);
+    for presentation in presentations.into_iter() {
+        public_presentations.push(presentation.clone().wipe_private_data()?);
 
         presentation.verify_private_facets(&CryptoProvider::default())?;
     }
 
-    Ok(Response::from(presentations))
+    Ok(hash_presentations(&public_presentations))
 }

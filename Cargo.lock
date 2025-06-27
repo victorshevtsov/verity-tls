@@ -991,8 +991,8 @@ name = "host"
 version = "0.1.0"
 dependencies = [
  "bincode",
+ "blake3",
  "fixtures",
- "hex",
  "methods",
  "risc0-zkvm",
  "serde_json",
@@ -1177,8 +1177,8 @@ name = "method"
 version = "0.1.0"
 dependencies = [
  "bincode",
+ "blake3",
  "fixtures",
- "hex",
  "risc0-zkvm",
  "serde_json",
  "verity-tls",

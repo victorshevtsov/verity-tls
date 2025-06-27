@@ -5,7 +5,7 @@ edition.workspace = true
 
 [dependencies]
 bincode = { workspace = true }
-hex = { workspace = true }
+blake3 = { workspace = true }
 fixtures = { workspace = true }
 risc0-zkvm = { workspace = true, features = ['std'] }
 serde_json = { workspace = true }
