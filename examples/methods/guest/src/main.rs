@@ -1,16 +1,16 @@
 use risc0_zkvm::guest::env;
-use verity_tls::{
-    merkle::generate_merkle_tree,
-    tlsn_core::{presentation::Presentation, CryptoProvider},
-};
+use verity_tls::{merkle::generate_merkle_tree, tlsn_core::CryptoProvider};
+
+mod interop;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // read the input
-    // let presentation = read_input_1();
-    // let presentation = read_input_2()?;
-    let private_presentation = read_input_3()?;
+    let private_presentation = interop::read_input()?;
 
-    let public_presentation = private_presentation.clone().wipe_private_data()?;
+    let mut public_presentation = private_presentation.clone();
+    public_presentation = public_presentation.wipe_private_data()?;
+    public_presentation = public_presentation.wipe_public_data()?;
+    public_presentation = public_presentation.wipe_precomputed_encodings()?;
 
     private_presentation.verify_private_facets(&CryptoProvider::default())?;
 
@@ -21,35 +21,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let root_hex = hex::encode(root);
 
     env::commit(&root_hex);
+    env::commit(&serde_json::to_string(&public_presentation)?);
+    env::commit(&bincode::serialize(&public_presentation)?);
 
     Ok(())
-}
-
-#[allow(dead_code)]
-fn read_input_1() -> Presentation {
-    let presentation = env::read();
-    presentation
-}
-
-#[allow(dead_code)]
-fn read_input_2() -> Result<Presentation, Box<dyn std::error::Error>> {
-    let input_bytes: Vec<u8> = env::read();
-
-    let params: String = String::from_utf8(input_bytes)?;
-    let presentation: Presentation = serde_json::from_str(params.as_str())?;
-
-    Ok(presentation)
-}
-
-#[allow(dead_code)]
-fn read_input_3() -> Result<Presentation, Box<dyn std::error::Error>> {
-    let len: usize = env::read();
-    println!("Guest is reading input_bytes: {}", len);
-
-    let mut input_bytes = vec![0u8; len];
-    env::read_slice(&mut input_bytes);
-
-    let presentation = bincode::deserialize(&input_bytes)?;
-
-    Ok(presentation)
 }
