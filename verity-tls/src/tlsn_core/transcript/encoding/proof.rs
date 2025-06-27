@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt};
+use std::{collections::BTreeMap, fmt};
 
 use mpz_garble_core::{encoding_state::Full, EncodedValue};
 use serde::{Deserialize, Serialize};
@@ -31,7 +31,7 @@ opaque_debug::implement!(Opening);
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct EncodingProof {
     pub(super) inclusion_proof: MerkleProof,
-    pub(super) openings: HashMap<usize, Opening>,
+    pub(super) openings: BTreeMap<usize, Opening>,
 }
 
 impl EncodingProof {

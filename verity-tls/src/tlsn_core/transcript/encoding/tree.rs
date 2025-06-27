@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use bimap::BiMap;
 use serde::{Deserialize, Serialize};
@@ -150,7 +150,7 @@ impl EncodingTree {
         transcript: &Transcript,
         idxs: impl Iterator<Item = &'idx (Direction, Idx)>,
     ) -> Result<EncodingProof, EncodingTreeError> {
-        let mut openings = HashMap::new();
+        let mut openings = BTreeMap::new();
         for dir_idx in idxs {
             let direction = dir_idx.0;
             let idx = &dir_idx.1;
